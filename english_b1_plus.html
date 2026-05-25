@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B1+ English Challenge</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#240046,#5a189a);color:white}
+.container{max-width:1000px;margin:auto;padding:20px}
+.header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+h1{font-size:2.3rem}
+.badge{background:white;color:#5a189a;padding:10px 18px;border-radius:999px;font-weight:bold}
+.card{background:white;color:#222;padding:25px;border-radius:28px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.meta{display:flex;justify-content:space-between;font-weight:bold;color:#666}
+.progress{height:14px;background:#ddd;border-radius:999px;overflow:hidden;margin:15px 0}
+.bar{height:100%;background:#22c55e;width:0%}
+.question{font-size:1.5rem;font-weight:bold;margin:20px 0;line-height:1.4}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.btn{padding:18px;border:none;border-radius:16px;font-size:1rem;font-weight:bold;cursor:pointer;color:white;min-height:72px}
+.red{background:#e63946}.blue{background:#1976d2}.green{background:#2e7d32}.yellow{background:#f9a825;color:black}
+.correct{outline:5px solid #00c853}.wrong{outline:5px solid #ff1744}
+input{width:100%;padding:15px;font-size:1.1rem;border-radius:12px;border:2px solid #ccc;margin-bottom:15px}
+.feedback{margin-top:15px;padding:15px;background:#f3f4f6;border-radius:15px}
+.wordbank,.dropzone{display:flex;gap:10px;flex-wrap:wrap;padding:15px;border-radius:15px;margin-bottom:15px}
+.wordbank{background:#ede9fe}.dropzone{background:white;border:3px dashed #999}
+.chip{background:#5a189a;color:white;padding:10px 16px;border-radius:999px;border:none;font-weight:bold;cursor:pointer}
+.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.matchitem{padding:14px;border-radius:14px;background:#f1f5f9;cursor:pointer}
+.selected{outline:3px solid #5a189a}
+.done{opacity:.45;text-decoration:line-through}
+#nextBtn{margin-top:20px;padding:15px 30px;border:none;border-radius:15px;background:black;color:white;font-size:1rem;cursor:pointer;display:none}
+@media(max-width:700px){.answers,.matchgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>⚡ English B1+ Challenge</h1>
+<div class="badge">Kahoot-Stil · 40 Fragen</div>
+</div>
+<div class="card">
+<div class="meta">
+<div id="counter"></div>
+<div id="score"></div>
+</div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div id="question" class="question"></div>
+<div id="area"></div>
+<button id="nextBtn" onclick="nextQuestion()">Next ➜</button>
+</div>
+</div>
+
+<script>
+const quiz = [{"type": "mc", "q": "Choose the correct sentence.", "options": ["Hardly had I arrived when the meeting started.", "Hardly I had arrived when the meeting started.", "Hardly had I arrived than the meeting started.", "Hardly I arrived when the meeting had started."], "answer": 0, "explain": "Inversion after negative adverbs: Hardly had I arrived..."}, {"type": "mc", "q": "Choose the best option.", "options": ["If I had known, I would have helped you.", "If I would have known, I had helped you.", "If I knew, I would have helped you yesterday.", "If I had known, I will help you."], "answer": 0, "explain": "Third conditional: If + past perfect, would have + participle."}, {"type": "write", "q": "Complete: She wishes she ______ more confident during presentations.", "answers": ["were"], "explain": "After 'wish', unreal situations often use 'were'."}, {"type": "spot", "q": "Spot the passive infinitive:<br><b>The project needs to be completed by Friday.</b>", "answers": ["to be completed"], "explain": "Passive infinitive = to be + participle."}, {"type": "dialog", "q": "Complete the dialogue:<br><b>A:</b> You should apologise.<br><b>B:</b> Yes, I know. I really ______ to.", "answers": ["ought"], "explain": "Ought to = moral obligation/advice."}, {"type": "tf", "q": "True or false? “Despite of the rain, we went out.” is correct.", "answer": false, "explain": "Correct: Despite the rain OR In spite of the rain."}, {"type": "order", "q": "Put the words in the correct order.", "words": ["never", "such", "had", "I", "seen", "a", "beautiful", "view"], "answer": ["never", "had", "I", "seen", "such", "a", "beautiful", "view"], "explain": "Negative adverb inversion: Never had I seen..."}, {"type": "transform", "q": "Rewrite using a relative clause:<br><b>The woman is my aunt. She lives in Canada.</b>", "answers": ["the woman who lives in canada is my aunt"], "explain": "Relative clause with who."}, {"type": "match", "q": "Match the expressions with their meanings.", "left": ["carry on", "put off", "come across", "work out"], "right": ["continue", "postpone", "find by chance", "solve/discover"], "pairs": [0, 1, 2, 3], "explain": "Common B1+ phrasal verbs."}, {"type": "detective", "q": "Which sentence sounds most natural?", "options": ["I’m used to getting up early.", "I’m used to get up early.", "I use to getting up early.", "I’m used get up early."], "answer": 0, "explain": "Be used to + -ing."}, {"type": "mc", "q": "Choose the correct connector.", "options": ["Although he was tired, he kept working.", "Despite he was tired, he kept working.", "In spite he was tired, he kept working.", "Although of being tired, he kept working."], "answer": 0, "explain": "Although + clause."}, {"type": "write", "q": "Complete: By next year, I ______ working here for ten years.", "answers": ["will have been"], "explain": "Future perfect continuous."}, {"type": "spot", "q": "Spot the reported speech structure:<br><b>She warned me not to touch the wire.</b>", "answers": ["warned me not to touch"], "explain": "Reported commands/warnings."}, {"type": "mc", "q": "Choose the correct sentence.", "options": ["The film was so boring that we left early.", "The film was such boring that we left early.", "It was so a boring film that we left early.", "The film boring enough we left early."], "answer": 0, "explain": "So + adjective + that."}, {"type": "tf", "q": "True or false? “He denied stealing the money.” is correct.", "answer": true, "explain": "Deny + -ing."}, {"type": "dialog", "q": "Complete:<br><b>A:</b> Why didn’t you call me?<br><b>B:</b> I meant ______, but I forgot.", "answers": ["to call you", "to call"], "explain": "Mean to do = intend to do."}, {"type": "mc", "q": "Choose the correct inversion.", "options": ["Rarely do we see such talent.", "Rarely we see such talent.", "Rarely did we saw such talent.", "Rarely we do see such talent."], "answer": 0, "explain": "Inversion after negative adverbs."}, {"type": "transform", "q": "Rewrite using 'unless':<br><b>If you don’t hurry, you’ll miss the train.</b>", "answers": ["unless you hurry you'll miss the train", "unless you hurry, you'll miss the train"], "explain": "Unless = if not."}, {"type": "lie", "q": "Two truths and one lie: Which sentence is WRONG?", "options": ["I’d rather stay at home tonight.", "She suggested going earlier.", "He insisted to pay for dinner."], "answer": 2, "explain": "Correct: He insisted on paying for dinner."}, {"type": "mc", "q": "Choose the correct sentence.", "options": ["No sooner had we sat down than the lights went out.", "No sooner we had sat down than the lights went out.", "No sooner had we sat down when the lights went out.", "No sooner we sat down than the lights had gone out."], "answer": 0, "explain": "No sooner ... than ..."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}, {"type": "mc", "q": "Choose the most natural B1+ sentence.", "options": ["I would rather stay home than go out tonight.", "I rather would stay home than go out tonight.", "I would rather to stay home than go out tonight.", "I rather stay home than to go out tonight."], "answer": 0, "explain": "Would rather + infinitive without to."}];
+let current=0, score=0, locked=false, selected=[], matchLeft=null, matchDone=0;
+
+const q=document.getElementById("question");
+const area=document.getElementById("area");
+const nextBtn=document.getElementById("nextBtn");
+const counter=document.getElementById("counter");
+const scoreEl=document.getElementById("score");
+const bar=document.getElementById("bar");
+
+function norm(s){
+ return (s||"").toLowerCase().trim().replace(/[.,!?]/g,"").replace(/\s+/g," ");
+}
+
+function topBar(){
+ counter.innerHTML=`Question ${current+1} / ${quiz.length}`;
+ scoreEl.innerHTML=`Score: ${score}`;
+ bar.style.width=((current/quiz.length)*100)+"%";
+}
+
+function render(){
+ locked=false;
+ selected=[];
+ matchLeft=null;
+ matchDone=0;
+ nextBtn.style.display="none";
+ area.innerHTML="";
+ topBar();
+
+ let item=quiz[current];
+ q.innerHTML=item.q;
+
+ if(["mc","detective","lie"].includes(item.type)) renderMC(item);
+ else if(item.type==="tf") renderTF(item);
+ else if(["write","dialog","spot","transform"].includes(item.type)) renderWrite(item);
+ else if(item.type==="order") renderOrder(item);
+ else if(item.type==="match") renderMatch(item);
+}
+
+function renderMC(item){
+ let wrap=document.createElement("div");
+ wrap.className="answers";
+
+ item.options.forEach((op,i)=>{
+   let b=document.createElement("button");
+   b.className="btn "+["red","blue","yellow","green"][i%4];
+   b.innerHTML=op;
+
+   b.onclick=()=>{
+     if(locked)return;
+     locked=true;
+
+     if(i===item.answer){
+        score++;
+        b.classList.add("correct");
+        feedback(true,item.explain);
+     }else{
+        b.classList.add("wrong");
+        wrap.children[item.answer].classList.add("correct");
+        feedback(false,item.explain);
+     }
+     topBar();
+   };
+
+   wrap.appendChild(b);
+ });
+
+ area.appendChild(wrap);
+}
+
+function renderTF(item){
+ let wrap=document.createElement("div");
+ wrap.className="answers";
+
+ [["True",true],["False",false]].forEach((x,i)=>{
+   let b=document.createElement("button");
+   b.className="btn "+(i===0?"blue":"red");
+   b.innerHTML=x[0];
+
+   b.onclick=()=>{
+     if(locked)return;
+     locked=true;
+
+     if(x[1]===item.answer){
+       score++;
+       b.classList.add("correct");
+       feedback(true,item.explain);
+     }else{
+       b.classList.add("wrong");
+       feedback(false,item.explain);
+     }
+     topBar();
+   };
+
+   wrap.appendChild(b);
+ });
+
+ area.appendChild(wrap);
+}
+
+function renderWrite(item){
+ let input=document.createElement("input");
+ let button=document.createElement("button");
+
+ button.className="btn green";
+ button.innerHTML="Check";
+
+ button.onclick=()=>{
+   if(locked)return;
+   locked=true;
+
+   let val=norm(input.value);
+
+   let ok=item.answers.some(a=>norm(a)===val || val.includes(norm(a)));
+
+   if(ok){
+      score++;
+      feedback(true,item.explain);
+   }else{
+      feedback(false,"Possible answer: "+item.answers[0]+"<br>"+item.explain);
+   }
+
+   topBar();
+ };
+
+ area.appendChild(input);
+ area.appendChild(button);
+}
+
+function renderOrder(item){
+ let bank=document.createElement("div");
+ bank.className="wordbank";
+
+ let zone=document.createElement("div");
+ zone.className="dropzone";
+
+ item.words.forEach(word=>{
+   let chip=document.createElement("button");
+   chip.className="chip";
+   chip.innerHTML=word;
+
+   chip.onclick=()=>{
+      selected.push(word);
+      let span=document.createElement("span");
+      span.className="chip";
+      span.innerHTML=word;
+      zone.appendChild(span);
+      chip.disabled=true;
+   };
+
+   bank.appendChild(chip);
+ });
+
+ let check=document.createElement("button");
+ check.className="btn green";
+ check.innerHTML="Check Order";
+
+ check.onclick=()=>{
+   if(locked)return;
+   locked=true;
+
+   if(norm(selected.join(" "))===norm(item.answer.join(" "))){
+      score++;
+      feedback(true,item.explain);
+   }else{
+      feedback(false,"Correct: "+item.answer.join(" "));
+   }
+
+   topBar();
+ };
+
+ area.appendChild(bank);
+ area.appendChild(zone);
+ area.appendChild(check);
+}
+
+function renderMatch(item){
+ let grid=document.createElement("div");
+ grid.className="matchgrid";
+
+ let left=document.createElement("div");
+ let right=document.createElement("div");
+
+ item.left.forEach((t,i)=>{
+   let d=document.createElement("div");
+   d.className="matchitem";
+   d.innerHTML=t;
+
+   d.onclick=()=>{
+      if(locked)return;
+      [...left.children].forEach(x=>x.classList.remove("selected"));
+      d.classList.add("selected");
+      matchLeft=i;
+   };
+
+   left.appendChild(d);
+ });
+
+ item.right.forEach((t,i)=>{
+   let d=document.createElement("div");
+   d.className="matchitem";
+   d.innerHTML=t;
+
+   d.onclick=()=>{
+      if(locked || matchLeft===null)return;
+
+      if(item.pairs[matchLeft]===i){
+         left.children[matchLeft].classList.add("done");
+         d.classList.add("done");
+         matchDone++;
+
+         if(matchDone===item.left.length){
+            score++;
+            locked=true;
+            feedback(true,item.explain);
+            topBar();
+         }
+
+      }else{
+         locked=true;
+         feedback(false,item.explain);
+      }
+   };
+
+   right.appendChild(d);
+ });
+
+ grid.appendChild(left);
+ grid.appendChild(right);
+ area.appendChild(grid);
+}
+
+function feedback(ok,text){
+ let div=document.createElement("div");
+ div.className="feedback";
+ div.innerHTML=(ok?"✅ ":"❌ ")+text;
+ area.appendChild(div);
+ nextBtn.style.display="inline-block";
+}
+
+function nextQuestion(){
+ current++;
+
+ if(current<quiz.length){
+   render();
+ }else{
+   q.innerHTML="🏆 Quiz Finished!";
+   area.innerHTML="<h2>You scored "+score+" out of "+quiz.length+"</h2>";
+   nextBtn.style.display="none";
+   bar.style.width="100%";
+ }
+}
+
+render();
+</script>
+</body>
+</html>
